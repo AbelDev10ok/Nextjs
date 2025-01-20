@@ -15,7 +15,7 @@ export async function fetchRevenue() {
     // Don't do this in production :)
 
     // console.log('Fetching revenue data...');
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     const data = await sql<Revenue>`SELECT * FROM revenue`;
 
@@ -30,6 +30,7 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   try {
+    await new Promise((resolve)=> setTimeout(resolve,1000))
     const data = await sql<LatestInvoiceRaw>`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
       FROM invoices
@@ -60,7 +61,18 @@ export async function fetchCardData() {
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
          FROM invoices`;
 
-    const data = await Promise.all([
+        //  ¿Qué son las cascadas de solicitudes?
+
+        //  Por ejemplo, debemos esperar a fetchRevenue()que se ejecute antes de fetchLatestInvoices()
+        //  poder comenzar a ejecutarse, y así sucesivamente.
+
+        //  Obtención de datos en paralelo
+        //  Una forma común de evitar las cascadas es iniciar todas las solicitudes de datos al mismo tiempo, en paralelo.
+         
+        //  En JavaScript, puedes utilizar elPromise.all()oPromise.allSettled()funciones
+        //  para iniciar todas las promesas al mismo tiempo. Por ejemplo, en data.ts, usamos Promise.all()en la fetchCardData()función:
+    
+        const data = await Promise.all([
       invoiceCountPromise,
       customerCountPromise,
       invoiceStatusPromise,
